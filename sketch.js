@@ -1,12 +1,10 @@
-let x = 400; // Minimap center position
-let y = 400; // Minimap center position
-let w = 200; // Minimap width
-let h = 200; // Minimap height
-let speed = 5; // Movement speed
+let tx = 0; // translation x
+let ty = 0; // translation y
+let w = 200; // width
+let h = 200; // height
 let rotation = 0; // Minimap rotation angle
+let speed = 5;
 
-let px = 400,
-    py = 400;
 let mapImage;
 
 function preload() {
@@ -16,12 +14,13 @@ function preload() {
 
 function setup() {
     createCanvas(800, 800);
+
     background(255);
 }
 
 function draw() {
     background(255);
-
+    translate(400, 400);
     // Draw the main map
     drawMainMap();
 
@@ -31,75 +30,127 @@ function draw() {
     // Draw the minimap content
     drawMinimap();
 
-    // Calculate the point's position above the current view
-    let relativeX = map(px, w / 2, width - w / 2, x - w / 2, x + w / 2);
-    let relativeY = map(py, h / 2, height - h / 2, y - h / 2, y + h / 2);
-
-    // Apply the same rotation to the red point to keep it correctly positioned
-    let angle = radians(rotation);
-    let offsetX = relativeX - x;
-    let offsetY = relativeY - y;
-    let rotatedX = offsetX * cos(angle) - offsetY * sin(angle) + x;
-    let rotatedY = offsetX * sin(angle) + offsetY * cos(angle) + y;
-
-    // Draw the point on the minimap
-    fill(255, 0, 0);
-    ellipse(rotatedX, rotatedY, 4, 4);
-
     // Update the minimap position based on arrow keys
-    if (keyIsDown(UP_ARROW) && y - h / 2 > 0) {
-        y -= speed;
-        py -= speed;
+    if (
+        keyIsDown(UP_ARROW) &&
+        findFixedPoint(tx, ty - speed, rotation, w / width, h / height) !== null
+    ) {
+        ty -= speed;
     }
-    if (keyIsDown(DOWN_ARROW) && y + h / 2 < 800) {
-        y += speed;
-        py += speed;
+    if (
+        keyIsDown(DOWN_ARROW) &&
+        findFixedPoint(tx, ty + speed, rotation, w / width, h / height) !== null
+    ) {
+        ty += speed;
     }
-    if (keyIsDown(LEFT_ARROW) && x - w / 2 > 0) {
-        x -= speed;
-        px -= speed;
+    if (
+        keyIsDown(LEFT_ARROW) &&
+        findFixedPoint(tx - speed, ty, rotation, w / width, h / height) !== null
+    ) {
+        tx -= speed;
     }
-    if (keyIsDown(RIGHT_ARROW) && x + w / 2 < 800) {
-        x += speed;
-        px += speed;
+    if (
+        keyIsDown(RIGHT_ARROW) &&
+        findFixedPoint(tx + speed, ty, rotation, w / width, h / height) !== null
+    ) {
+        tx += speed;
     }
-    if (keyIsDown(80) && x + w / 2 < 800 && x - w / 2 > 0 && w < 500) {
+    if (
+        keyIsDown(80) &&
+        findFixedPoint(tx, ty, rotation, (w + speed) / width, h / height) !==
+            null
+    ) {
         w += speed;
     }
-    if (keyIsDown(79) && x + w / 2 < 800 && x - w / 2 > 0 && w > -500) {
+    if (
+        keyIsDown(79) &&
+        findFixedPoint(tx, ty, rotation, (w - speed) / width, h / height) !==
+            null
+    ) {
         w -= speed;
     }
-    if (keyIsDown(76) && y + h / 2 < 800 && y - h / 2 > 0 && h < 500) {
+    if (
+        keyIsDown(76) &&
+        findFixedPoint(tx, ty, rotation, w / width, (h + speed) / height) !==
+            null
+    ) {
         h += speed;
     }
-    if (keyIsDown(75) && y + h / 2 < 800 && y - h / 2 > 0 && h > -500) {
+    if (
+        keyIsDown(75) &&
+        findFixedPoint(tx, ty, rotation, w / width, (h - speed) / height) !==
+            null
+    ) {
         h -= speed;
     }
-    if (keyIsDown(77)) {
+    if (
+        keyIsDown(77) &&
+        findFixedPoint(tx, ty, rotation + speed, w / width, h / height) !== null
+    ) {
         rotation += speed;
     }
-    if (keyIsDown(78)) {
+    if (
+        keyIsDown(78) &&
+        findFixedPoint(tx, ty, rotation - speed, w / width, h / height) !== null
+    ) {
         rotation -= speed;
     }
+
+    let fixedPoint = findFixedPoint(tx, ty, rotation, w / width, h / height);
+    if (fixedPoint !== null) {
+        fill(255, 0, 0);
+        ellipse(fixedPoint.x, fixedPoint.y, 5);
+    }
+}
+
+function findFixedPoint(tx, ty, rotation, sx, sy) {
+    let theta = radians(rotation);
+
+    // Coefficients from the transformation matrix
+    let a = sx * cos(theta);
+    let b = -sy * sin(theta);
+    let c = sx * sin(theta);
+    let d = sy * cos(theta);
+
+    // We want to solve the system:
+    // a * x + b * y + tx = x
+    // c * x + d * y + ty = y
+
+    // Rearrange to find fixed points
+    // (a - 1) * x + b * y = -tx
+    // c * x + (d - 1) * y = -ty
+
+    let denominator = (a - 1) * (d - 1) - b * c;
+    if (denominator === 0) {
+        // No fixed point or infinite fixed points
+        return null;
+    }
+
+    let x = (b * ty - (d - 1) * tx) / denominator;
+    let y = (tx * c - (a - 1) * ty) / denominator;
+
+    if (x < -400 || x > 400 || y < -400 || y > 400) {
+        // Fixed point is outside the main map
+        return null;
+    }
+
+    return { x: x, y: y };
 }
 
 function drawMainMap(alpha = 255) {
     // Draw the map image on the main map
     tint(255, alpha); // Apply alpha channel to the image
-    image(mapImage, 0, 0, 800, 800);
+    image(mapImage, -400, -400, 800, 800);
 }
 
 function drawMinimap() {
     // Draw the minimap with alpha channel
-
     push();
-
-    translate(x, y);
+    translate(tx, ty);
     rotate(radians(rotation));
-    translate(-w / 2, -h / 2);
-    scale(w / 800, h / 800); // Scale down to fit in minimap
+    scale(w / width, h / height);
     fill(200, 200, 200, 150); // Gray color with alpha
-    rect(0, 0, 800, 800);
+    rect(-400, -400, 800, 800);
     drawMainMap(150);
     pop();
 }
