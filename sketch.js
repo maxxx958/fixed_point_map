@@ -30,74 +30,57 @@ function draw() {
     // Draw the minimap content
     drawMinimap();
 
+    let ntx = tx,
+        nty = ty,
+        nw = w,
+        nh = h,
+        nrotation = rotation;
     // Update the minimap position based on arrow keys
-    if (
-        keyIsDown(UP_ARROW) &&
-        findFixedPoint(tx, ty - speed, rotation, w / width, h / height) !== null
-    ) {
-        ty -= speed;
+    if (keyIsDown(UP_ARROW)) {
+        nty -= speed;
     }
-    if (
-        keyIsDown(DOWN_ARROW) &&
-        findFixedPoint(tx, ty + speed, rotation, w / width, h / height) !== null
-    ) {
-        ty += speed;
+    if (keyIsDown(DOWN_ARROW)) {
+        nty += speed;
     }
-    if (
-        keyIsDown(LEFT_ARROW) &&
-        findFixedPoint(tx - speed, ty, rotation, w / width, h / height) !== null
-    ) {
-        tx -= speed;
+    if (keyIsDown(LEFT_ARROW)) {
+        ntx -= speed;
     }
-    if (
-        keyIsDown(RIGHT_ARROW) &&
-        findFixedPoint(tx + speed, ty, rotation, w / width, h / height) !== null
-    ) {
-        tx += speed;
+    if (keyIsDown(RIGHT_ARROW)) {
+        ntx += speed;
     }
-    if (
-        keyIsDown(80) &&
-        findFixedPoint(tx, ty, rotation, (w + speed) / width, h / height) !==
-            null
-    ) {
-        w += speed;
+    if (keyIsDown(80)) {
+        nw += speed;
     }
-    if (
-        keyIsDown(79) &&
-        findFixedPoint(tx, ty, rotation, (w - speed) / width, h / height) !==
-            null
-    ) {
-        w -= speed;
+    if (keyIsDown(79)) {
+        nw -= speed;
     }
-    if (
-        keyIsDown(76) &&
-        findFixedPoint(tx, ty, rotation, w / width, (h + speed) / height) !==
-            null
-    ) {
-        h += speed;
+    if (keyIsDown(76)) {
+        nh += speed;
     }
-    if (
-        keyIsDown(75) &&
-        findFixedPoint(tx, ty, rotation, w / width, (h - speed) / height) !==
-            null
-    ) {
-        h -= speed;
+    if (keyIsDown(75)) {
+        nh -= speed;
     }
-    if (
-        keyIsDown(77) &&
-        findFixedPoint(tx, ty, rotation + speed, w / width, h / height) !== null
-    ) {
-        rotation += speed;
+    if (keyIsDown(77)) {
+        nrotation += speed;
     }
-    if (
-        keyIsDown(78) &&
-        findFixedPoint(tx, ty, rotation - speed, w / width, h / height) !== null
-    ) {
-        rotation -= speed;
+    if (keyIsDown(78)) {
+        nrotation -= speed;
     }
 
-    let fixedPoint = findFixedPoint(tx, ty, rotation, w / width, h / height);
+    let fixedPoint = findFixedPoint(
+        ntx,
+        nty,
+        nrotation,
+        nw / width,
+        nh / height
+    );
+    // If the move is possible then commit to it
     if (fixedPoint !== null) {
+        tx = ntx;
+        ty = nty;
+        w = nw;
+        h = nh;
+        rotation = nrotation;
         fill(255, 0, 0);
         ellipse(fixedPoint.x, fixedPoint.y, 5);
     }
