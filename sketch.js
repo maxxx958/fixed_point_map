@@ -23,7 +23,7 @@ function draw() {
     textSize(14);
     textAlign(CENTER);
     fill(200, 100, 100);
-    text("Red dot is the fixed point", 80, 16);
+    text("Red dot is the fixed point", 85, 16);
     fill(120);
     text(
         "Arrow keys: Move map\nO-P: Change width\nK/L: Change height\nN/M: Rotate",
